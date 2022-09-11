@@ -104,7 +104,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
                     onPressed: () {
     if (_formKey.currentState!.validate()) {
     // TODO submit
-       Navigator.push(
+       Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(builder: (context) => main2()),
                             );

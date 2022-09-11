@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "878310105620",
+    "firebase_url": "https://hoba-7e83d-default-rtdb.firebaseio.com",
+    "project_id": "hoba-7e83d",
+    "storage_bucket": "hoba-7e83d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:878310105620:android:9c3859fa8e2e35f4537d01",
+        "android_client_info": {
+          "package_name": "com.example.flutterproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "878310105620-m2o6vapahvsg4gjgfsf72rubkn0tknos.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdnH_Jp7vQq4kn50Uzlzv5wAaIoMHx3qE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "878310105620-m2o6vapahvsg4gjgfsf72rubkn0tknos.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

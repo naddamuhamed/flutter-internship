@@ -6,7 +6,10 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutterproject/login.dart';
+import 'package:flutterproject/grid gallery.dart';
 import 'dart:convert';
+
+enum Options { search, upload, copy, exit }
 
 void main() {
   runApp(const main2());
@@ -57,155 +60,228 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  var _popupMenuItemIndex = 0;
+  var ctime;
+  Color _changeColorAccordingToMenuItem = Colors.red;
 
+  PopupMenuItem _buildPopupMenuItem(
+      String title, IconData iconData, int position) {
+    return PopupMenuItem(
+      value: position,
+      child: Row(
+        children: [
+          Icon(
+            iconData,
+            color: Colors.black,
+          ),
+          Text(title),
+        ],
+      ),
+    );
+  }
 
+  _onMenuItemSelected(int value) {
+    setState(() {
+      _popupMenuItemIndex = value;
+    });
+
+    if (value == Options.search.index) {
+      _changeColorAccordingToMenuItem = Colors.red;
+    } else if (value == Options.upload.index) {
+      _changeColorAccordingToMenuItem = Colors.green;
+    } else if (value == Options.copy.index) {
+      _changeColorAccordingToMenuItem = Colors.blue;
+    } else {
+      _changeColorAccordingToMenuItem = Colors.purple;
+    }
+  }
+  
+  Future<bool> _onWillPop() async {
+    return (await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: new Text('Are you sure?'),
+        content: new Text('Do you want to exit an App'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false), //<-- SEE HERE
+            child: new Text('No'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true), // <-- SEE HERE
+            child: new Text('Yes'),
+          ),
+        ],
+      ),
+    )) ??
+        false;
+  }
+  
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: new AppBar(
-        title: Text("jhvjm"),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding:  EdgeInsets.all(0),
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
-              ), //BoxDecoration
-              child: UserAccountsDrawerHeader(
-                decoration: BoxDecoration(color: Colors.blue),
-                accountName: Text(
-                  "Abhishek Mishra",
-                  style: TextStyle(fontSize: 18),
-                ),
-                accountEmail: Text("abhishekm977@gmail.com"),
-                currentAccountPictureSize: Size.square(50),
-                currentAccountPicture: CircleAvatar(
-                  backgroundColor: Color.fromARGB(255, 165, 255, 137),
-                  child: Text(
-                    "A",
-                    style: TextStyle(fontSize: 30.0, color: Colors.blue),
-                  ), //Text
-                ), //circleAvatar
-              ), //UserAccountDrawerHeader
-            ), //DrawerHeader
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text(' My Profile '),
-              onTap: () {
-                Navigator.pop(context);
+    return
+      WillPopScope(
+
+        onWillPop: _onWillPop,
+        // () {
+        //   DateTime now = DateTime.now();
+        //   if (ctime == null || now.difference(ctime) > Duration(seconds: 2)) {
+        //     //add duration of press gap
+        //     ctime = now;
+        //     ScaffoldMessenger.of(context).showSnackBar(
+        //         SnackBar(content: Text('Press Back Button Again to Exit'))
+        //     ); //scaffold message, you can show Toast message too.
+        //     return Future.value(false);
+        //   }
+        //
+        //   return Future.value(true);
+        // },
+        child: Scaffold(
+        appBar: AppBar(
+          title: Text("jhvjm"),
+          actions: [
+            PopupMenuButton(
+              itemBuilder: (context) =>[
+                _buildPopupMenuItem('Search', Icons.search, Options.search.index),
+                _buildPopupMenuItem('Upload', Icons.upload, Options.upload.index),
+                _buildPopupMenuItem('Copy', Icons.copy, Options.copy.index),
+                _buildPopupMenuItem('Exit', Icons.exit_to_app, Options.exit.index),
+              ],
+              icon: Icon(
+                Icons.settings,
+                size: 35,
+                color: Colors.white,
+              ),
+              // initialValue: 2,
+              onCanceled: () {
+                print("you have cancelled menu.");
               },
-            ),
-            ListTile(
-              leading: const Icon(Icons.book),
-              title: const Text(' My Course '),
-              onTap: () {
-                _navigateToNextScreen(context);
-                // Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.workspace_premium),
-              title: const Text(' Go Premium '),
-              onTap: () {
-                _navigateToNextScreen(context);
-                // Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.video_label),
-              title: const Text(' Saved Videos '),
-              onTap: () {
-                _navigateToNextScreen(context);
-                // Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.edit),
-              title: const Text(' Edit Profile '),
-              onTap: () {
-                _navigateToNextScreen(context);
-                // Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('LogOut'),
-              onTap: () {
-                _navigateToNextScreen(context);
-                // Navigator.pop(context);
+              onSelected: (value) {
+                print("value: $value");
+                if (value==3){
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const login()),
+                  );
+                }
               },
             ),
           ],
         ),
-      ),
-      body:
-
-      Column(
-        children: [
-          PopupMenuButton(
-            icon: Icon(Icons.more_vert),
-            itemBuilder: (BuildContext context) => <PopupMenuEntry>[
-              const PopupMenuItem(
-                child: ListTile(
-                  leading: Icon(Icons.add),
-                  title: Text('Item 1'),
-                ),
+        drawer: Drawer(
+          child: ListView(
+            padding: EdgeInsets.all(0),
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                ), //BoxDecoration
+                child: UserAccountsDrawerHeader(
+                  decoration: BoxDecoration(color: Colors.blue),
+                  accountName: Text(
+                    "Abhishek Mishra",
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  accountEmail: Text("abhishekm977@gmail.com"),
+                  currentAccountPictureSize: Size.square(50),
+                  currentAccountPicture: CircleAvatar(
+                    backgroundColor: Color.fromARGB(255, 165, 255, 137),
+                    child: Text(
+                      "A",
+                      style: TextStyle(fontSize: 30.0, color: Colors.blue),
+                    ), //Text
+                  ), //circleAvatar
+                ), //UserAccountDrawerHeader
+              ), //DrawerHeader
+              ListTile(
+                leading: const Icon(Icons.person),
+                title: const Text(' My Profile '),
+                onTap: () {
+                  Navigator.pop(context);
+                },
               ),
-              const PopupMenuItem(
-                child: ListTile(
-                  leading: Icon(Icons.anchor),
-                  title: Text('Item 2'),
-                ),
+              ListTile(
+                leading: const Icon(Icons.book),
+                title: const Text(' My Course '),
+                onTap: () {
+                  _navigateToNextScreen(context);
+                  // Navigator.pop(context);
+                },
               ),
-              const PopupMenuItem(
-                child: ListTile(
-                  leading: Icon(Icons.article),
-                  title: Text('Item 3'),
-                ),
+              ListTile(
+                leading: const Icon(Icons.workspace_premium),
+                title: const Text(' Go Premium '),
+                onTap: () {
+                  _navigateToNextScreen(context);
+                  // Navigator.pop(context);
+                },
               ),
-              const PopupMenuDivider(),
-              const PopupMenuItem(child: Text('Item A')),
-              const PopupMenuItem(child: Text('Item B')),
+              ListTile(
+                leading: const Icon(Icons.video_label),
+                title: const Text(' Saved Videos '),
+                onTap: () {
+                  _navigateToNextScreen(context);
+                  // Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.edit),
+                title: const Text(' Edit Profile '),
+                onTap: () {
+                  _navigateToNextScreen(context);
+                  // Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text('LogOut'),
+                onTap: () {
+                  _navigateToNextScreen(context);
+                  // Navigator.pop(context);
+                },
+              ),
             ],
           ),
-          DefaultTabController(
-          length: 3,
-          child: Scaffold(
-            appBar: AppBar(
-              actions: <Widget>[],
-              title: TabBar(
-                tabs: [
-                  Tab(icon: new Icon(Icons.directions_car)),
-                  Tab(icon: new Icon(Icons.directions_transit)),
-                  Tab(icon: new Icon(Icons.directions_bike)),
-                ],
-                indicatorColor: Colors.white,
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              flex: 2,
+              child: DefaultTabController(
+                length: 3,
+                child: Scaffold(
+                  appBar: AppBar(
+                    actions: <Widget>[],
+                    title: TabBar(
+                      tabs: [
+                        Tab(icon: new Icon(Icons.directions_car)),
+                        Tab(icon: new Icon(Icons.directions_transit)),
+                        Tab(icon: new Icon(Icons.directions_bike)),
+                      ],
+                      indicatorColor: Colors.white,
+                    ),
+                  ),
+                  body: TabBarView(
+                    children: [
+                      NewScreen3(),
+                      NewScreen2(),
+                      RouteOne(),
+                    ],
+                  ),
+                ),
               ),
             ),
-            body: TabBarView(
-              children: [
-                NewScreen3(),
-                NewScreen2(),
-                Icon(Icons.directions_bike, size: 50.0,),
-              ],
-            ),
-          ),
+          ],
         ),
-
-      ],
-      ),
-    );
-
-
+    ),
+      );
   }
-
 
   void _navigateToNextScreen(BuildContext context) {
     Navigator.of(context)
         .push(MaterialPageRoute(builder: (context) => NewScreen()));
   }
+
   void _incrementCounter() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
@@ -216,9 +292,8 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter++;
     });
   }
-
-
 }
+
 class NewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -233,92 +308,75 @@ class NewScreen extends StatelessWidget {
     );
   }
 }
+
 class NewScreen3 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-
-    return
-      SizedBox(
-        height: 200.0,
-        width: 200.0,
-        child: Card(
-          elevation: 8,
-          margin: EdgeInsets.all(10),
-          child: Container(
-            height: 100,
-            color: Colors.white,
-            child: Row(
-              children: [
-                Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(10),
-                    child: Expanded(
-                      flex: 2,
-                      child: Image.asset("assets/images/shape_of_you.jpg"),
-                      // child:Image.network( // <-- SEE HERE
-                      //   'https://picsum.photos/id/1074/400/400',
-                      // ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 8,
-                  child: Container(
-                    alignment: Alignment.topLeft,
-                    child: Column(
-                      children: [
-                        Expanded(
-                          flex: 5,
-                          child: ListTile(
-                            title: Text("Shape Of You"),
-                            subtitle: Text("Ed Sheeran"),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 5,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                child: Text("PLAY"),
-                                onPressed: () {
-                                  Fluttertoast.showToast(
-                                      msg: "This is a Toast message",
-                                      // message
-                                      toastLength: Toast.LENGTH_SHORT,
-                                      // length
-                                      gravity: ToastGravity.CENTER // location
-                                    // duration
-                                  );
-                                },
-                              ),
-                              SizedBox(
-                                width: 8,
-                              ),
-                              TextButton(
-                                child: Text("ADD TO QUEUE"),
-                                onPressed: () {},
-                              ),
-                              SizedBox(
-                                width: 8,
-                              )
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+    return           Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          ListTile(
+            leading: Icon(Icons.arrow_drop_down_circle),
+            title: const Text('Card title 1'),
+            subtitle: Text(
+              'Secondary Text',
+              style: TextStyle(color: Colors.black.withOpacity(0.6)),
             ),
           ),
-        ),
-      );
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Greyhound divisively hello coldly wonderfully marginally far upon excluding.',
+              style: TextStyle(color: Colors.black.withOpacity(0.6)),
+            ),
+          ),
+          ButtonBar(
+            alignment: MainAxisAlignment.start,
+            children: [
+              TextButton(
+
+                // textColor: const Color(0xFF6200EE),
+                onPressed: () {
+                  // Perform some action
+                  Fluttertoast.showToast(
+                      msg: "This is a Toast message",
+                      // message
+                      toastLength: Toast.LENGTH_SHORT,
+                      // length
+                      gravity: ToastGravity.CENTER // location
+                    // duration
+                  );
+                },
+                child: const Text('ACTION 1'),
+              ),
+              TextButton(
+                // textColor: const Color(0xFF6200EE),
+
+                onPressed: () {
+                  // Perform some action
+                  Fluttertoast.showToast(
+                      msg: "This is a Toast message",
+                      // message
+                      toastLength: Toast.LENGTH_SHORT,
+                      // length
+                      gravity: ToastGravity.CENTER // location
+                    // duration
+                  );
+                },
+                child: const Text('ACTION 2'),
+              ),
+            ],
+          ),
+          Image.asset('assets/images/shape_of_you.jpg'),
+          // Image.asset('assets/card-sample-image-2.jpg'),
+        ],
+      ),
+    );
   }
 }
 
 class NewScreen2 extends StatelessWidget {
-
   Future<List<User>> usersf = getUsers();
 
   static Future<List<User>> getUsers() async {
@@ -357,8 +415,7 @@ class NewScreen2 extends StatelessWidget {
     );
   }
 
-  Widget buildUsers(List<User> users) =>
-      Expanded(
+  Widget buildUsers(List<User> users) => Expanded(
         child: SizedBox(
           height: 700.0,
           child: ListView.builder(
@@ -411,4 +468,31 @@ class User {
         urlAvatar: json['url'],
         thumbnail: json['thumbnailUrl']);
   }
+}
+
+class NewScreen4 extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return
+RouteOne();
+
+
+      // Navigator.push(
+      //   context,
+      //   MaterialPageRoute(builder: (context) => const login()),
+      // );
+
+
+
+
+    //   runApp(
+    //   MaterialApp(debugShowCheckedModeBanner: false, initialRoute: '/', routes: {
+    //     '/': (context) => RouteOne(),
+    //     '/detail': (context) => RouteTwo(image: '', name: ''),
+    //   }),
+    // );
+    // TODO: implement build
+    // throw UnimplementedError();
+  }
+  
 }
