@@ -1,5 +1,7 @@
 import 'dart:async';
-
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
+// import 'firebase_options.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -7,16 +9,22 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutterproject/login.dart';
 import 'package:flutterproject/grid gallery.dart';
+
+import 'package:flutterproject/image upload.dart';
 import 'dart:convert';
 
 enum Options { search, upload, copy, exit }
 
-void main() {
-  runApp(const main2());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // await  Firebase.initializeApp();
+  runApp( main2());
 }
 
 class main2 extends StatelessWidget {
-  const main2({super.key});
+   main2({super.key});
+final firebase=Firebase.initializeApp();
+   //
 
   // This widget is the root of your application.
   @override
@@ -35,7 +43,24 @@ class main2 extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home:
+      FutureBuilder(
+        future: firebase,
+        builder: (context,snapshot){
+          if(snapshot.hasError){
+            print(snapshot.error.toString());
+          return Text("something went wrong!");
+          }
+            else if(snapshot.hasData) {
+            print(snapshot.data);
+            // print(tf.)
+            return MyHomePage(title: 'Flutter Demo Home Page');
+          }
+            else
+              return Text("something");
+        },
+      )
+      // const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -60,9 +85,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  var _popupMenuItemIndex = 0;
+
   var ctime;
-  Color _changeColorAccordingToMenuItem = Colors.red;
+  DatabaseReference tf=FirebaseDatabase.instance.ref();
 
   PopupMenuItem _buildPopupMenuItem(
       String title, IconData iconData, int position) {
@@ -78,22 +103,6 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
     );
-  }
-
-  _onMenuItemSelected(int value) {
-    setState(() {
-      _popupMenuItemIndex = value;
-    });
-
-    if (value == Options.search.index) {
-      _changeColorAccordingToMenuItem = Colors.red;
-    } else if (value == Options.upload.index) {
-      _changeColorAccordingToMenuItem = Colors.green;
-    } else if (value == Options.copy.index) {
-      _changeColorAccordingToMenuItem = Colors.blue;
-    } else {
-      _changeColorAccordingToMenuItem = Colors.purple;
-    }
   }
   
   Future<bool> _onWillPop() async {
@@ -142,9 +151,9 @@ class _MyHomePageState extends State<MyHomePage> {
           actions: [
             PopupMenuButton(
               itemBuilder: (context) =>[
-                _buildPopupMenuItem('Search', Icons.search, Options.search.index),
-                _buildPopupMenuItem('Upload', Icons.upload, Options.upload.index),
-                _buildPopupMenuItem('Copy', Icons.copy, Options.copy.index),
+                _buildPopupMenuItem('Search/write', Icons.search, Options.search.index),
+                _buildPopupMenuItem('Upload/read', Icons.upload, Options.upload.index),
+                _buildPopupMenuItem('Copy/update', Icons.copy, Options.copy.index),
                 _buildPopupMenuItem('Exit', Icons.exit_to_app, Options.exit.index),
               ],
               icon: Icon(
@@ -156,8 +165,26 @@ class _MyHomePageState extends State<MyHomePage> {
               onCanceled: () {
                 print("you have cancelled menu.");
               },
-              onSelected: (value) {
+              onSelected: (value) async {
                 print("value: $value");
+                // DatabaseReference tf=FirebaseDatabase.instance.ref();
+                if (value==0)
+                tf.child("test").set("Ds");
+                if (value==1){
+                  final snapshot = await tf.child('name').get();
+                  if (snapshot.exists) {
+                    print(snapshot.value);
+                  } else {
+                    print('No data available.');
+                  }
+                }
+                if(value==2){
+                  await tf.update({
+                    "name": "fdgfd",
+                  });
+                }
+
+                // tf.
                 if (value==3){
                   Navigator.pushReplacement(
                     context,
@@ -271,6 +298,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
             ),
+
           ],
         ),
     ),
@@ -297,14 +325,12 @@ class _MyHomePageState extends State<MyHomePage> {
 class NewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('New Screen')),
-      body: const Center(
-        child: Text(
-          'This is a new screen',
-          style: TextStyle(fontSize: 24.0),
-        ),
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
       ),
+      home:  const ImageUploads(),
     );
   }
 }
