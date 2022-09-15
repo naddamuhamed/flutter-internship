@@ -52,7 +52,7 @@ class MyApp extends StatelessWidget {
                   // builder: (BuildContext context)
                   // create: (counterCubitContext) => CounterCubit(),
                     create: (BuildContext context) => CounterCubit(0),
-                    child : CounterScreen()
+                    child : CounterScreen(),
 
                 ),
               );
@@ -77,7 +77,7 @@ class MyApp extends StatelessWidget {
 
 class CounterScreen extends StatelessWidget {
 DatabaseReference tf=FirebaseDatabase.instance.ref();
-  read() async {
+Future<Object?> read() async {
 final snapshot = await tf.child('number').get() ;
     return snapshot.value;
   }
@@ -93,63 +93,60 @@ final snapshot = await tf.child('number').get() ;
   Widget build(BuildContext context) {
 
     final _counterBloc = BlocProvider.of<CounterCubit>(context);
-    final dsfds=read();
+    // final dsfds=read();
     // print(dsfds.);
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          FutureBuilder(
-            future: dsfds,
-            builder: (context,snapshot){
+    return FutureBuilder(key: UniqueKey(),
+      future: read(),
+      builder: (context,snapshot){
 // print(snapshot.data);
-              String sdf=snapshot.data.toString();
+        String sdf=snapshot.data.toString();
               print(snapshot.data.toString());
-              print(int.parse(sdf) );
-_counterBloc.emit(CounterState(counterValue: int.parse(sdf)));
-              // children: [
-                return Column(
-                  children: <Widget>[
+//               print(int.parse(sdf) );
+            if(snapshot.data != null){
+            _counterBloc.emit(CounterState(
+                counterValue: int.parse(snapshot.data.toString())));
+          }
+          // children: [
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
 
 
-                    BlocBuilder<CounterCubit,CounterState>(
-                      builder: (BuildContext context,counterValue){
-                        // snapshot.data;
-                        return Text("Count Value : $counterValue", style: TextStyle(fontSize: 30),);
-                      },
-                    ),
+              BlocBuilder<CounterCubit,CounterState>(
+                builder: (BuildContext context,counterValue){
+                  // snapshot.data;
+                  return Text("Count Value : $counterValue", style: TextStyle(fontSize: 30),);
+                },
+              ),
 
 
-                    ButtonBar(
-                      alignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        TextButton(
-                          child: Text("increment"),
-                          onPressed: (){
-                            // _counterBloc.emit(CounterState(counterValue: 9));
-                            _counterBloc.increment();
-                            update(_counterBloc.state.counterValue);
-                          },
-                        ),
+              ButtonBar(
+                alignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  TextButton(
+                    child: Text("increment"),
+                    onPressed: (){
+                      // _counterBloc.emit(CounterState(counterValue: 9));
+                      _counterBloc.increment();
+                      update(_counterBloc.state.counterValue);
+                    },
+                  ),
 
-                        TextButton(
-                          child: Text("decrement"),
-                          onPressed: (){
-                            _counterBloc.decrement();
-                            update(_counterBloc.state.counterValue);
-                          },
-                        ),
-                      ],
-                    )
+                  TextButton(
+                    child: Text("decrement"),
+                    onPressed: (){
+                      _counterBloc.decrement();
+                      update(_counterBloc.state.counterValue);
+                    },
+                  ),
+                ],
+              )
 
-                  ],
-                );
-              // ];
-            }
+            ],
+          );
+        // ];
+      }
 
-          ),
-        ],
-      ),
     );
   }
 }
